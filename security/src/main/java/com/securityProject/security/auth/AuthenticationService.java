@@ -52,4 +52,32 @@ public class AuthenticationService {
                 .token(jwtToken)
                 .build();
     }
+
+    public AuthenticationResponse updateUser(int id, RegisterRequest request) {
+        var user = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Update user details and encode the password securely
+        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+
+        // Encode password only if it's being updated
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        repository.save(user);
+
+        // Generate a new JWT token after update
+        var jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponse.builder().token(jwtToken).build();
+    }
+
+    public void deleteUser(int id) {
+        var user = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        repository.delete(user);
+    }
 }
