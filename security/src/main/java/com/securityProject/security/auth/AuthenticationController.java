@@ -24,14 +24,13 @@ public class AuthenticationController {
 
     @PutMapping("/user/{id}")
     public ResponseEntity<AuthenticationResponse> updateUser(
-            @PathVariable int id,
+            @PathVariable String id,
             @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.updateUser(id, request));
     }
 
-    // Delete user endpoint
     @DeleteMapping("/user/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable int id) {
+    public ResponseEntity<String> deleteUser(@PathVariable String id) {
         service.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully.");
     }
