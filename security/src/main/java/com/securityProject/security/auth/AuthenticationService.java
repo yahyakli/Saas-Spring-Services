@@ -2,9 +2,9 @@ package com.securityProject.security.auth;
 
 
 import com.securityProject.security.config.JwtService;
-import com.securityProject.security.user.Role;
-import com.securityProject.security.user.User;
-import com.securityProject.security.user.UserRepository;
+import com.securityProject.security.model.Role;
+import com.securityProject.security.model.User;
+import com.securityProject.security.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
