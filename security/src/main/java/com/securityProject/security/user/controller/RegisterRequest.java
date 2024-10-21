@@ -1,4 +1,4 @@
-package com.securityProject.security.auth;
+package com.securityProject.security.user.controller;
 
 
 import lombok.AllArgsConstructor;
@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterRequest {
 
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String password;
+    private String profile_picture;
 
 }

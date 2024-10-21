@@ -1,4 +1,4 @@
-package com.securityProject.security.user;
+package com.securityProject.security.user.model;
 
 
 import jakarta.persistence.*;
@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -25,10 +26,13 @@ public class User implements UserDetails {
     @Id
     @UuidGenerator
     private String id;
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String password;
+    private String profile_picture;
+    private Date created_at;
+    private Date updated_at;
+
 
     @Enumerated(EnumType.STRING)
     private Role role;

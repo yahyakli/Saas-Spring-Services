@@ -1,15 +1,21 @@
-package com.securityProject.security.auth;
+package com.securityProject.security.user.service;
 
 
-import com.securityProject.security.config.JwtService;
-import com.securityProject.security.user.Role;
-import com.securityProject.security.user.User;
-import com.securityProject.security.user.UserRepository;
+import com.securityProject.security.user.config.JwtService;
+import com.securityProject.security.user.controller.AuthenticationRequest;
+import com.securityProject.security.user.controller.AuthenticationResponse;
+import com.securityProject.security.user.controller.RegisterRequest;
+import com.securityProject.security.user.model.Role;
+import com.securityProject.security.user.model.User;
+import com.securityProject.security.user.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,13 +26,23 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+
+    public List<User> getAllUsers (){
+        return repository.findAll();
+    }
+
+    public User getUser (String id) {
+        return repository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     public AuthenticationResponse register(RegisterRequest request) {
         var user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
+                .created_at(new Date())
+                .updated_at(new Date())
                 .build();
         repository.save(user);
 
@@ -58,8 +74,7 @@ public class AuthenticationService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         user.setEmail(request.getEmail());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
+        user.setName(request.getName());
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
