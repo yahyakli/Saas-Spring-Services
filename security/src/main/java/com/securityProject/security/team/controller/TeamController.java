@@ -1,9 +1,7 @@
 package com.securityProject.security.team.controller;
 
-
-
 import com.securityProject.security.team.model.Team;
-import com.securityProject.security.team.repo.TeamRepository;
+import com.securityProject.security.team.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,43 +13,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeamController {
 
-    private final TeamRepository teamRepository;
+    private final TeamService teamService;
 
     @PostMapping
-    public ResponseEntity<Team> createTeam(@RequestBody Team team) {
-        return ResponseEntity.ok(teamRepository.save(team));
+    public ResponseEntity<Team> createTeam(@RequestBody TeamRequest request) {
+        return teamService.createTeam(request);
     }
 
     @GetMapping
     public ResponseEntity<List<Team>> getAllTeams() {
-        return ResponseEntity.ok(teamRepository.findAll());
+        List<Team> teams = teamService.getAllTeams();
+        if (teams.isEmpty()) {
+            return ResponseEntity.status(404).body(null); // Return 404 if no teams are found
+        }
+        return ResponseEntity.ok(teams);
     }
 
     @GetMapping("/{teamId}")
     public ResponseEntity<Team> getTeamById(@PathVariable String teamId) {
-        return teamRepository.findById(teamId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return teamService.getTeamById(teamId);
     }
 
     @PutMapping("/{teamId}")
-    public ResponseEntity<Team> updateTeam(@PathVariable String teamId, @RequestBody Team teamDetails) {
-        return teamRepository.findById(teamId)
-                .map(team -> {
-                    team.setName(teamDetails.getName());
-                    team.setDescription(teamDetails.getDescription());
-                    return ResponseEntity.ok(teamRepository.save(team));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Team> updateTeam(
+            @PathVariable String teamId,
+            @RequestBody TeamRequest request
+    ) {
+        return teamService.updateTeam(teamId, request);
     }
 
     @DeleteMapping("/{teamId}")
-    public ResponseEntity<Object> deleteTeam(@PathVariable String teamId) {
-        return teamRepository.findById(teamId)
-                .map(team -> {
-                    teamRepository.delete(team);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<String> deleteTeam(@PathVariable String teamId) {
+        return teamService.deleteTeam(teamId);
     }
 }
