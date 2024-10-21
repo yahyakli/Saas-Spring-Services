@@ -1,6 +1,5 @@
 package com.securityProject.security.team.controller;
 
-
 import com.securityProject.security.team.model.TeamMember;
 import com.securityProject.security.team.model.TeamRole;
 import com.securityProject.security.team.service.TeamMemberService;
@@ -28,13 +27,11 @@ public class TeamMemberController {
 
     @DeleteMapping("/{teamMemberId}")
     public ResponseEntity<Void> removeMember(@PathVariable String teamMemberId) {
-        teamMemberService.removeMember(teamMemberId);
-        return ResponseEntity.noContent().build();
+        return teamMemberService.removeMember(teamMemberId);
     }
 
     @GetMapping
     public ResponseEntity<List<TeamMember>> getMembers(@PathVariable String teamId) {
-        List<TeamMember> members = teamMemberService.getMembers(teamId);
-        return ResponseEntity.ok(members);
+        return teamMemberService.getMembers(teamId);
     }
 }
