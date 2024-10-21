@@ -17,7 +17,6 @@ public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
 
-    // Add a member to the team
     @PostMapping
     public ResponseEntity<TeamMember> addMember(
             @PathVariable String teamId,
@@ -27,14 +26,12 @@ public class TeamMemberController {
         return ResponseEntity.ok(teamMember);
     }
 
-    // Remove a member from the team
     @DeleteMapping("/{teamMemberId}")
     public ResponseEntity<Void> removeMember(@PathVariable String teamMemberId) {
         teamMemberService.removeMember(teamMemberId);
         return ResponseEntity.noContent().build();
     }
 
-    // Get all members of the team
     @GetMapping
     public ResponseEntity<List<TeamMember>> getMembers(@PathVariable String teamId) {
         List<TeamMember> members = teamMemberService.getMembers(teamId);
