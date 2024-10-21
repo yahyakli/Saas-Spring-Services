@@ -1,7 +1,6 @@
 package com.securityProject.security.user.service;
 
-
-import com.securityProject.security.user.config.JwtService;
+import com.securityProject.security.config.JwtService;
 import com.securityProject.security.user.controller.AuthenticationRequest;
 import com.securityProject.security.user.controller.AuthenticationResponse;
 import com.securityProject.security.user.controller.RegisterRequest;
@@ -9,6 +8,8 @@ import com.securityProject.security.user.model.Role;
 import com.securityProject.security.user.model.User;
 import com.securityProject.security.user.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,13 +27,22 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-
-    public List<User> getAllUsers (){
-        return repository.findAll();
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = repository.findAll();
+        if (users.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(users);
     }
 
-    public User getUser (String id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public ResponseEntity<User> getUser(String id) {
+        User user = repository.findById(id)
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(user);
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -61,7 +71,7 @@ public class AuthenticationService {
                 )
         );
         var user = repository.findByEmail(request.getEmail())
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("User not found"));
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse
                 .builder()
@@ -69,9 +79,13 @@ public class AuthenticationService {
                 .build();
     }
 
-    public AuthenticationResponse updateUser(String id, RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> updateUser(String id, RegisterRequest request) {
         var user = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
 
         user.setEmail(request.getEmail());
         user.setName(request.getName());
@@ -83,13 +97,18 @@ public class AuthenticationService {
         repository.save(user);
 
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return ResponseEntity.ok(AuthenticationResponse.builder().token(jwtToken).build());
     }
 
-    public void deleteUser(String id) {
+    public ResponseEntity<String> deleteUser(String id) {
         var user = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
 
         repository.delete(user);
+        return ResponseEntity.ok("User deleted successfully");
     }
 }
