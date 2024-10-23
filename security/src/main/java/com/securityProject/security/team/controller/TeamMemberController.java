@@ -21,8 +21,7 @@ public class TeamMemberController {
             @PathVariable String teamId,
             @RequestParam String userId,
             @RequestParam TeamRole role) {
-        TeamMember teamMember = teamMemberService.addMember(teamId, userId, role);
-        return ResponseEntity.ok(teamMember);
+        return teamMemberService.addMember(teamId, userId, role);
     }
 
     @DeleteMapping("/{teamMemberId}")

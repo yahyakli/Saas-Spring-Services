@@ -8,10 +8,13 @@ import com.securityProject.security.user.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -20,13 +23,19 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
 
-    public ResponseEntity<Team> createTeam(TeamRequest request) {
-        User owner = userRepository.findById(request.getOwnerId())
-                .orElse(null);
+    // Helper method to get the authenticated user from the JWT token
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName(); // Assuming the email is stored in the JWT token
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
-        if (owner == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+    public ResponseEntity<Team> createTeam(TeamRequest request) {
+        // Get the authenticated user from the JWT
+        User owner = getAuthenticatedUser();
+
+        // Create the team with the authenticated user as the owner
         Team team = Team.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -62,6 +71,12 @@ public class TeamService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
+        // Only allow the owner of the team to update it
+        User authenticatedUser = getAuthenticatedUser();
+        if (!team.getOwner().getId().equals(authenticatedUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+
         team.setName(request.getName());
         team.setDescription(request.getDescription());
         team.setUpdated_at(new Date());
@@ -76,6 +91,12 @@ public class TeamService {
 
         if (team == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team not found");
+        }
+
+        // Only allow the owner of the team to delete it
+        User authenticatedUser = getAuthenticatedUser();
+        if (!team.getOwner().getId().equals(authenticatedUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the owner of this team");
         }
 
         teamRepository.delete(team);
