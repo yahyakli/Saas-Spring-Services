@@ -12,11 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
 
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = repository.findAll();
@@ -110,5 +115,37 @@ public class AuthenticationService {
 
         repository.delete(user);
         return ResponseEntity.ok("User deleted successfully");
+    }
+
+    public Map<String, String> generateTokens(UserDetails userDetails) {
+        String accessToken = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+
+        return tokens;
+    }
+
+    public Map<String, String> refreshToken(String refreshToken) {
+        // Extract username from the refresh token
+        String username = jwtService.extractUsername(refreshToken);
+
+        // Load user from DB or user service
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        // Validate the refresh token
+        if (jwtService.isTokenValid(refreshToken, userDetails)) {
+            // Generate new access token
+            String newAccessToken = jwtService.generateToken(userDetails);
+
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", newAccessToken);
+            tokens.put("refreshToken", refreshToken); // You can choose to refresh refreshToken as well
+            return tokens;
+        } else {
+            throw new RuntimeException("Invalid refresh token");
+        }
     }
 }
