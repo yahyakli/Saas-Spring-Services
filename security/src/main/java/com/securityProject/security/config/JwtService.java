@@ -17,7 +17,7 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // Updated the SECRET_KEY to a secure 256-bit key (32 bytes), base64 encoded
+    // The SECRET_KEY to a secure 256-bit key (32 bytes), base64 encoded
     private static final String SECRET_KEY = "MzJieXRlU2VjdXJlU2VjcmV0S2V5Rm9yU0hBNjU2QWxnb3JpdGht";
 
     public String extractUsername(String jwt) {
